@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #2c3e50;
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+#juego {
+    margin-top: 20px;
+}
+
+#marcador {
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #34495e;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+}
+
+#tablero {
+    display: grid;
+    gap: 4px;
+    /* Espacio entre diamantes */
+    background-color: #34495e;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.diamante {
+    width: 60px;
+    height: 60px;
+    /* Dando forma de diamante o gema suave */
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.2), 0 4px 5px rgba(0, 0, 0, 0.3);
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.diamante:hover {
+    transform: scale(1.05);
+}
+
+.diamante.seleccionado {
+    border-color: white;
+    transform: scale(1.1);
+}
+
+/* Colores de los diamantes */
+.color-rojo {
+    background-color: #e74c3c;
+}
+
+.color-verde {
+    background-color: #2ecc71;
+}
+
+.color-azul {
+    background-color: #3498db;
+}
+
+.color-amarillo {
+    background-color: #f1c40f;
+}
+
+.color-naranja {
+    background-color: #e67e22;
+}
+
+.color-morado {
+    background-color: #9b59b6;
+}
