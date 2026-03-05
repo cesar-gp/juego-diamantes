@@ -47,8 +47,16 @@ function numero(str) {
 	return isNaN(out) ? str : out;
 }
 
-// Funciones: sistema de coordenadas
+// Funciones: sistema de coordenadas.
 
+/**
+ *	Comprueba si un objeto tiene una estructura
+ *	válida para considerarse como coordenadas.
+ * 
+ *	Debe tener una 'x' y una 'y' mayores que 0
+ *	y menores que las columnas y filas del
+ *	tablero, respectivamente.
+ */
 function validarCoordenadas(coord) {
 	return coord != null &&
 		coord != undefined &&
@@ -60,6 +68,14 @@ function validarCoordenadas(coord) {
 		coord.y < tablero.dataset.rows;
 }
 
+/**
+ *	Comprueba si un objeto tiene una estructura
+ *	válida para considerarse como dirección.
+ * 
+ *	Debe tener una 'x' y una 'y' que estén entre
+ *	-1 y 1. Además, el valor absoluto de las
+ *	mismas no debe coincidir.
+ */
 function validarDireccion(dir) {
 	return dir != null &&
 		dir != undefined &&
@@ -71,6 +87,9 @@ function validarDireccion(dir) {
 		dir.x != -dir.y;
 }
 
+/**
+ *	Construye un par de coordenadas validado.
+ */
 function coordenadas(x, y) {
 	let out = {
 		x: x,
@@ -80,6 +99,9 @@ function coordenadas(x, y) {
 	return validarCoordenadas(out) ? out : null;
 }
 
+/**
+ *	Construye una dirección validada.
+ */
 function direccion(x, y) {
 	let out = {
 		x: x,
@@ -89,6 +111,15 @@ function direccion(x, y) {
 	return validarDireccion(out) ? out : null;
 }
 
+/**
+ *	Devuelve las coordenadas resultantes de
+ *	"moverse" desde 'coord' en dirección 'dir'
+ *	el número de bloques 'distancia'.
+ * 
+ *	En otros términos: multiplica las coordenadas
+ *	de la dirección por la distancia y suma el
+ *	resultado a las coordenadas proporcionadas.
+ */
 function mover(coord, dir, distancia) {
 	if(!validarCoordenadas(coord)) return null;
 	if(!validarDireccion(dir)) return null;
@@ -213,9 +244,9 @@ function intercambiarColores(a, b) {
  *	Si lo hay, lo intercambia con el diamante
  *	que tiene justo arriba.
  * 
- *	El método se invoca en cadena hasta
- *	llegar a la fila 0, en la cual vuelve
- *	sin realizar ninguna acción.
+ *	El método se invoca recursivamente hasta
+ *	llegar a una posición que tenga por encima
+ *	coordenadas inválidas (la fila 0).
  */
 function aplicarGravedad(coord) {
 	// ¿No hay nada por encima? Volver.
@@ -235,6 +266,15 @@ function aplicarGravedad(coord) {
 	aplicarGravedad(mover(coord, DIR_TOP, 1));
 }
 
+/**
+ *	Recibe una lista de diamantes, los borra del
+ *	tablero y aplica gravedad para trasladar los
+ *	huecos creados a la cima del tablero.
+ * 
+ *	Las acciones de borrar y aplicar gravedad son
+ *	a lo que nos referimos cuando decimos que se
+ *	"limpia" un diamante o un grupo de ellos.
+ */
 function limpiarCoincidencias(dmts) {
 	for(const dmt of dmts) {
 		dmt.style.opacity = 0;
@@ -324,8 +364,8 @@ function actualizarTablero(repetida) {
  *	tablero para comprobar si se ha formado
  *	un trio de diamantes nuevo.
  * 
- *	Si no se ha formado ninguno, se restaura
- *	la posición anterior de los diamantes.
+ *	Si el intercambio no produce ningún trio
+ *	de diamantes nuevo, se cancela.
  */
 function intercambiarDiamantes(a, b) {
 	// Intercambiar colores de los diamantes.
@@ -342,6 +382,9 @@ function intercambiarDiamantes(a, b) {
 // Funciones: eventos web.
 
 /**
+ *	Función ejecutada al hacer click sobre
+ *	un diamante.
+ * 
  *	Comprueba que el diamante sobre el que
  *	se ha hecho click no esté vacío. Si es
  *	así, hace lo siguiente:
@@ -349,8 +392,8 @@ function intercambiarDiamantes(a, b) {
  *	-	Si no hay ningún diamante seleccionado,
  *		selecciona el que se ha clickado.
  * 
- *	-	Si el diamante clickado ya está seleccionado,
- *		cancela la selección.
+ *	-	Si el diamante clickado ya está
+ *		seleccionado, cancela la selección.
  * 
  *	-	Si ya hay un diamante seleccionado y el
  *		diamante clickado es adyacente a este,
@@ -400,7 +443,7 @@ function manejarClickDiamante(event) {
 // Funciones: generación de elementos para el DOM.
 
 /**
- *	Devuelve un <div> con la clase 'diamante'
+ *	Devuelve un <div> con la ID 'diamante'
  *	y todas las propiedades que posibilitan su
  *	funcionamiento como parte del tablero.
  */
