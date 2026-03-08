@@ -132,6 +132,53 @@ function mover(coord, dir, distancia) {
 	return out;
 }
 
+// Funciones: trios de diamantes adyacentes.
+
+/**
+ *	Comprueba que un trio de diamantes adyacentes
+ *	contenga una lista con 3 diamantes y que
+ */
+function validarTrio(tri) {
+	// Comprobar que contenga una lista con 3 diamantes.
+	let out = tri != undefined &&
+		tri != null &&
+		tri.bloques != null &&
+		tri.bloques != undefined &&
+		tri.bloques.size == 3;
+
+	if(!out) return false;
+
+	// Comprobar que ninguno de los 3 es un bloque vacío.
+	let coord;
+	for(b of tri.bloques) {
+		if(coord == undefined)
+			coord = coordenadas(b.dataset.col, b.dataset.fila);
+
+		if(b.dataset.col == coord.x) {
+			tri.horizontal = false;
+		} else if(b.dataset.fila == coord.y) {
+			tri.horizontal = true;
+		} else return false;
+	}
+
+	// Devolver resultado de la validación.
+	return out;
+}
+
+/**
+ *	Construye un trio de diamantes adyacentes
+ *	validado.
+ */
+function trio(bloques) {
+	let out = {
+		bloques: bloques
+	}
+
+	if(!validarTrio(out)) return null;
+
+	return out;
+}
+
 // Funciones: getters para elementos y atributos.
 
 /**
@@ -267,28 +314,6 @@ function aplicarGravedad(coord) {
 }
 
 /**
- *	Recibe una lista de diamantes, los borra del
- *	tablero y aplica gravedad para trasladar los
- *	huecos creados a la cima del tablero.
- * 
- *	Las acciones de borrar y aplicar gravedad son
- *	a lo que nos referimos cuando decimos que se
- *	"limpia" un diamante o un grupo de ellos.
- */
-function limpiarCoincidencias(dmts) {
-	for(const dmt of dmts) {
-		dmt.style.opacity = 0;
-		dmt.classList.remove(dmt.dataset.color);
-		dmt.dataset.color = "vacio";
-
-		// TODO: en los trios verticales, aplicar
-		// gravedad únicamente sobre el bloque de
-		// abajo del todo.
-		aplicarGravedad(posicion(dmt));
-	}
-}
-
-/**
  *	Realiza un recorrido de tablero en el eje
  *	indicado y devuelve una lista con todos los
  *	bloques que formen parte de trios de
@@ -322,9 +347,11 @@ function buscarCoincidencias(horizontal) {
 			// ¿Racha de 3? Eliminar trio y añadir
 			// bloques a la lista a devolver.
 			if(racha == 2) {
+				let tri = new Set();
 				for(let pos = 2; pos >= 0; pos--)
-					out.add(diamante(mover(coord, dir, pos)));
+					tri.add(diamante(mover(coord, dir, pos)));
 
+				out.add(trio(tri));
 				racha = 0;
 			}
 		}
@@ -337,25 +364,42 @@ function buscarCoincidencias(horizontal) {
 }
 
 /**
+ *	Recibe una lista de diamantes, los borra del
+ *	tablero y aplica gravedad para trasladar los
+ *	huecos creados a la cima del tablero.
+ * 
+ *	Las acciones de borrar y aplicar gravedad son
+ *	a lo que nos referimos cuando decimos que se
+ *	"limpia" un diamante o un grupo de ellos.
+ */
+function limpiarCoincidencias(trios) {
+	for(const tri of trios) {
+		for(dmt of tri.bloques) {
+			dmt.style.opacity = 0;
+			dmt.classList.remove(dmt.dataset.color);
+			dmt.dataset.color = "vacio";
+		}
+
+		for(dmt of tri.bloques)
+			aplicarGravedad(posicion(dmt));
+	}
+}
+
+/**
  *	Limpia los trios formados y se ejecuta
  *	recursivamente hasta que no encuentre
  *	ningún trio de diamantes en el tablero.
  */
 function actualizarTablero(repetida) {
-	// Guardar diamantes borrados en los dos ejes.
-	let horizontal = buscarCoincidencias(true);
-	let vertical = buscarCoincidencias(false);
-
-	// Combinar las dos listas.
-	let dmts = horizontal;
-	for(const diamante of vertical) dmts.add(diamante);
+	// Combinar trios horizontales y verticales.
+	let trios = buscarCoincidencias(true).union(buscarCoincidencias(false));
 
 	// Borrar todos los diamantes de la
 	// lista combinada.
-	limpiarCoincidencias(dmts);
+	limpiarCoincidencias(trios);
 
 	// Devolver lista combinada.
-	return dmts.size == 0 ? repetida : actualizarTablero(true);
+	return trios.size == 0 ? repetida : actualizarTablero(true);
 }
 
 /**
