@@ -34,11 +34,24 @@ const colores = [
 /**
  *	Tablero del juego.
  * 
- *	Está definido en el document HTML y se
+ *	Está definido en el documento HTML y se
  *	asume que nunca puede estar indefinido
  *	o tener un valor nulo.
  */
 const tablero = document.getElementById("tablero");
+
+/**
+ *	Indicador de puntuación.
+ * 
+ *	Está definido en el documento HTML y se
+ *	asume que nunca puede estar indefinido
+ *	o tener un valor nulo.
+ */
+const indicadorPuntuacion = document.getElementById("puntuacion");
+
+// Variables globales
+
+let puntuacion = 0;
 
 // Funciones: arreglos para el desastre de tipos de JavaScript.
 
@@ -380,6 +393,9 @@ function limpiarCoincidencias(trios) {
 			dmt.style.opacity = 0;
 			dmt.classList.remove(dmt.dataset.color);
 			dmt.dataset.color = "vacio";
+
+			// Sumar 10 puntos al usuario
+			puntuacion += 10;
 		}
 
 		// Aplicar gravedad sobre ellos.
@@ -419,6 +435,9 @@ function actualizarTablero(repetida) {
 	// Borrar todos los diamantes de la
 	// lista combinada.
 	limpiarCoincidencias(trios);
+
+	// Actualizar indicador de puntuación.
+	indicadorPuntuacion.innerText = puntuacion;
 
 	// Devolver lista combinada.
 	return trios.size == 0 ? repetida : actualizarTablero(true);
