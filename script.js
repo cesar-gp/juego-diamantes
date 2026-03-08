@@ -18,6 +18,8 @@ const DIR_RIGHT = direccion(1, 0);
 const DIR_BOTTOM = direccion(0, 1);
 const DIR_LEFT = direccion(-1, 0);
 
+const MAX_PUNTUACION = 1000;
+
 /**
  *	Posibles colores de un diamante, definidos
  *	como nombres de clases CSS.
@@ -51,7 +53,18 @@ const indicadorPuntuacion = document.getElementById("puntuacion");
 
 // Variables globales
 
+/**
+ *	Puntuación del jugador.
+ */
 let puntuacion = 0;
+
+/**
+ *	Si el juego está en curso o no.
+ * 
+ *	Cuando el juego se "apaga", el tablero
+ *	deja de recibir clicks del usuario.
+ */
+let encendido = true;
 
 // Funciones: arreglos para el desastre de tipos de JavaScript.
 
@@ -436,9 +449,6 @@ function actualizarTablero(repetida) {
 	// lista combinada.
 	limpiarCoincidencias(trios);
 
-	// Actualizar indicador de puntuación.
-	indicadorPuntuacion.innerText = puntuacion;
-
 	// Devolver lista combinada.
 	return trios.size == 0 ? repetida : actualizarTablero(true);
 }
@@ -459,8 +469,22 @@ function intercambiarDiamantes(a, b) {
 	// Si el intercambio no forma ningún trio,
 	// recuperar posición anterior.
 	setTimeout(() => {
-		if(actualizarTablero(false) == false)
+		if(actualizarTablero(false) == false) {
 			intercambiarColores(a, b);
+			return;
+		}
+	
+		// Actualizar indicador de puntuación y
+		// terminar el juego cuando ha llegado a
+		// la puntuación máxima.
+		if(puntuacion >= MAX_PUNTUACION) {
+			indicadorPuntuacion.innerText = MAX_PUNTUACION + " 🎉";
+			alert("¡Enhorabuena! Has llegado a la puntuación máxima.");
+
+			encendido = false;
+		} else {
+			indicadorPuntuacion.innerText = puntuacion;
+		}
 	}, 300);
 }
 
@@ -485,6 +509,8 @@ function intercambiarDiamantes(a, b) {
  *		intercambia sus propiedades.
  */
 function manejarClickDiamante(event) {
+	if(!encendido) return;
+
 	let seleccionados = document.getElementsByClassName("seleccionado");
 
 	// ¿El diamante está vacío? Cancelar operación.
