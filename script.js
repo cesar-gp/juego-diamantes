@@ -373,15 +373,37 @@ function buscarCoincidencias(horizontal) {
  *	"limpia" un diamante o un grupo de ellos.
  */
 function limpiarCoincidencias(trios) {
+	// Recorrer trios formados.
 	for(const tri of trios) {
+		// Borrar los diamantes que los componen.
 		for(dmt of tri.bloques) {
 			dmt.style.opacity = 0;
 			dmt.classList.remove(dmt.dataset.color);
 			dmt.dataset.color = "vacio";
 		}
 
+		// Aplicar gravedad sobre ellos.
 		for(dmt of tri.bloques)
 			aplicarGravedad(posicion(dmt));
+	}
+
+	// Recorrer el tablero para buscar huecos vacíos.
+	for(let y = 0; y < tablero.dataset.cols; y++) {
+		for(let x = 0; x < tablero.dataset.rows; x++) {
+			const coord = coordenadas(x, y);
+			const dmt = diamante(coord);
+
+			// Sustituir diamantes vacíos por nuevos diamantes.
+			if(dmt.dataset.color == "vacio") {
+				// Asignar nuevo color.
+				let color = obtenerColorValidoAleatorio(coord);
+				dmt.dataset.color = color;
+				dmt.classList.add(color);
+
+				// Devolver opacidad.
+				dmt.style.opacity = 1;
+			}
+		}
 	}
 }
 
