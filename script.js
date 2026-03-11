@@ -158,54 +158,62 @@ function mover(coord, dir, distancia) {
 	return out;
 }
 
-// Funciones: trios de diamantes adyacentes.
-
 /**
- *	Comprueba que un trio de diamantes adyacentes
- *	contenga una lista con 3 diamantes y que
+ *	Tiene la misma función que 'mover', pero
+ *	además, si se pasa de bloques en una fila
+ *	continúa en la siguiente.
+ * 
+ *	Solamente devuelve un valor nulo si se
+ *	pretende retroceder más allá de (0, 0) o
+ *	avanzar más allá de (7, 7).
  */
-function validarTrio(tri) {
-	// Comprobar que contenga una lista con 3 diamantes.
-	let out = tri != undefined &&
-		tri != null &&
-		tri.bloques != null &&
-		tri.bloques != undefined &&
-		tri.bloques.size == 3;
+function moverEnTablero(coord, dir, distancia) {
+	if(!validarCoordenadas(coord)) return null;
+	if(!validarDireccion(dir)) return null;
 
-	if(!out) return false;
+	let nuevaX;
+	let nuevaY;
 
-	// Comprobar que ninguno de los 3 es un bloque vacío.
-	let coord;
-	for(b of tri.bloques) {
-		if(coord == undefined)
-			coord = coordenadas(b.dataset.col, b.dataset.fila);
+	if(dir.y == 0) {
+		// ¿Movimiento horizontal? Calcular cuál sería
+		// la coordenada final en el eje 'x' en un
+		// movimiento natural (función 'mover()').
+		let movX = coord.x + dir.x * distancia;
 
-		if(b.dataset.col == coord.x) {
-			tri.horizontal = false;
-		} else if(b.dataset.fila == coord.y) {
-			tri.horizontal = true;
-		} else return false;
+		// Calcular la 'y' dividiendo esa coordenada final
+		// entre el tamaño de columna y sumando el resultado
+		// a la coordenada 'y' actual.
+		nuevaY = coord.y + Math.floor(movX / tablero.dataset.cols);
+
+		// ¿Movimiento hacia la izquierda? Invertir el
+		// sentido de la coordenada 'x' en la coordenada
+		// de destino (7 -> 0, 6 -> 1, 5 -> 2, etc.).
+		if(movX < 0) movX = numero(tablero.dataset.cols) + (movX % tablero.dataset.cols);
+
+		// Calcular 'x' cogiendo el resto entre la
+		// coordenada de destino y el tamaño de columna.
+		nuevaX = movX % tablero.dataset.cols;
+	} else {
+		// ¿Movimiento vertical? Mismos cálculos, pero
+		// con los ejes transpuestos.
+		let movY = coord.y + dir.y * distancia;
+		nuevaX = coord.x + Math.floor(movY / tablero.dataset.rows);
+
+		if(movY < 0) movY = numero(tablero.dataset.rows) + (movY % tablero.dataset.rows);
+		nuevaY = movY % tablero.dataset.rows;
 	}
 
-	// Devolver resultado de la validación.
-	return out;
-}
-
-/**
- *	Construye un trio de diamantes adyacentes
- *	validado.
- */
-function trio(bloques) {
+	// Construir, validar y devolver las coordenadas.
 	let out = {
-		bloques: bloques
+		x: nuevaX,
+		y: nuevaY
 	}
 
-	if(!validarTrio(out)) return null;
-
-	return out;
+	if(!validarCoordenadas(out)) return null;
+	else return out;
 }
 
-// Funciones: getters para elementos y atributos.
+// Funciones: getters para elementos y atributos del DOM.
 
 /**
  *	Devuelve un color aleatorio de entre los que
@@ -243,7 +251,7 @@ function posicion(diamante) {
  *	Se entiende como "válido" un color incluido en
  *	la lista 'colores' que no coincida con un color
  *	que compartan los dos bloques hacia arriba o los
- *	dos bloques hacia la derecha.
+ *	dos bloques hacia la izquierda.
  * 
  *	Esta función previene que el tablero se cree
  *	con trios formados al principio del juego.
@@ -351,41 +359,45 @@ function buscarCoincidencias(horizontal) {
 	// Sacar longitud de los ejes I y J.
 	const lenI = horizontal ? tablero.dataset.rows : tablero.dataset.cols;
 	const lenJ = horizontal ? tablero.dataset.cols : tablero.dataset.rows;
+	const dir = horizontal ? DIR_LEFT : DIR_TOP;
 
 	// Recorrer array en el orden deseado.
-	let racha = 0;
+	let racha = 1;
 	for(let i = 0; i < lenI; i++) {
-		for(let j = 1; j < lenJ; j++) {
+		for(let j = 0; j < lenJ; j++) {
 			// Sacar coordenadas actuales y dirección de la
 			// pieza anterior según el eje del recorrido.
 			const coord = horizontal ? coordenadas(j, i) : coordenadas(i, j);
-			const dir = horizontal ? DIR_LEFT : DIR_TOP;
-
-			// Ignorar bloques vacíos.
-			if(diamante(coord).dataset.color == "vacio")
+			
+			// ¿Bloque vacío? Ignorar y resetear racha.
+			if(diamante(coord).dataset.color == "vacio") {
+				racha = 1;
 				continue;
+			}
 
-			// Incrementar racha o romperla.
-			if(diamante(coord).dataset.color == diamante(mover(coord, dir, 1)).dataset.color)
+			// ¿Mismo color que el anterior en fila? Incrementar racha.
+			// ¿Distinto color o primero de fila? Romper racha.
+			if(j != 0 && diamante(coord).dataset.color == diamante(mover(coord, dir, 1)).dataset.color) {
 				racha++;
-			else racha = 0;
+			} else {
+				// ¿Racha de 3 o más? Eliminar diamantes
+				// y añadirlos a la lista a devolver.
+				if(racha >= 3)
+					for(let pos = racha - 1; pos >= 0; pos--)
+						out.add(diamante(moverEnTablero(coord, dir, pos + 1)));
 
-			// ¿Racha de 3? Eliminar trio y añadir
-			// bloques a la lista a devolver.
-			if(racha == 2) {
-				let tri = new Set();
-				for(let pos = 2; pos >= 0; pos--)
-					tri.add(diamante(mover(coord, dir, pos)));
-
-				out.add(trio(tri));
-				racha = 0;
+				racha = 1;
 			}
 		}
-
-		racha = 0;
 	}
 
-	// Devolver lista de bloques eliminados.
+	// ¿Racha de 3 o más al acabar? Eliminar los
+	// diamantes que queden.
+	if(racha >= 3)
+		for(let pos = racha - 1; pos >= 0; pos--)
+			out.add(diamante(moverEnTablero(coordenadas(7, 7), dir, pos + 1)));
+
+	// Devolver lista de diamantes eliminados.
 	return out;
 }
 
@@ -398,23 +410,34 @@ function buscarCoincidencias(horizontal) {
  *	a lo que nos referimos cuando decimos que se
  *	"limpia" un diamante o un grupo de ellos.
  */
-function limpiarCoincidencias(trios) {
-	// Recorrer trios formados.
-	for(const tri of trios) {
-		// Borrar los diamantes que los componen.
-		for(dmt of tri.bloques) {
-			dmt.style.opacity = 0;
-			dmt.classList.remove(dmt.dataset.color);
-			dmt.dataset.color = "vacio";
+function limpiarCoincidencias(diamantes) {
+	// Recorrer diamantes a limpiar.
+	for(const dmt of diamantes) {
+		// Borrar el diamante.
+		dmt.style.opacity = 0;
+		dmt.classList.remove(dmt.dataset.color);
+		dmt.dataset.color = "vacio";
 
-			// Sumar 10 puntos al usuario
-			puntuacion += 10;
-		}
+		// Sumar 10 puntos al usuario.
+		puntuacion += 10;
 
-		// Aplicar gravedad sobre ellos.
-		for(dmt of tri.bloques)
-			aplicarGravedad(posicion(dmt));
+		// Aplicar gravedad sobre él.
+		aplicarGravedad(posicion(dmt));
 	}
+}
+
+/**
+ *	Limpia los trios formados y se ejecuta
+ *	recursivamente hasta que no encuentre
+ *	ningún trio de diamantes en el tablero.
+ */
+function actualizarTablero(repetida) {
+	// Combinar trios horizontales y verticales.
+	let trios = buscarCoincidencias(true).union(buscarCoincidencias(false));
+
+	// Borrar todos los diamantes de la
+	// lista combinada.
+	limpiarCoincidencias(trios);
 
 	// Recorrer el tablero para buscar huecos vacíos.
 	for(let y = 0; y < tablero.dataset.cols; y++) {
@@ -434,20 +457,6 @@ function limpiarCoincidencias(trios) {
 			}
 		}
 	}
-}
-
-/**
- *	Limpia los trios formados y se ejecuta
- *	recursivamente hasta que no encuentre
- *	ningún trio de diamantes en el tablero.
- */
-function actualizarTablero(repetida) {
-	// Combinar trios horizontales y verticales.
-	let trios = buscarCoincidencias(true).union(buscarCoincidencias(false));
-
-	// Borrar todos los diamantes de la
-	// lista combinada.
-	limpiarCoincidencias(trios);
 
 	// Devolver lista combinada.
 	return trios.size == 0 ? repetida : actualizarTablero(true);
