@@ -197,67 +197,6 @@ function mover(coord, dir, distancia) {
 	return out;
 }
 
-/**
- *	Tiene la misma función que 'mover', pero
- *	además, si se pasa de bloques en una fila
- *	continúa en la siguiente.
- * 
- *	Solamente devuelve un valor nulo si se
- *	pretende retroceder más allá de (0, 0) o
- *	avanzar más allá de (7, 7).
- * 
- *	Se usa la función 'Math.floor()' para truncar
- *	números, tal y como se usa en el enunciado
- *	del ejercicio.
- * 
- *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
- */
-function moverEnTablero(coord, dir, distancia) {
-	if(!validarCoordenadas(coord)) return null;
-	if(!validarDireccion(dir)) return null;
-
-	let nuevaX;
-	let nuevaY;
-
-	if(dir.y == 0) {
-		// ¿Movimiento horizontal? Calcular cuál sería
-		// la coordenada final en el eje 'x' en un
-		// movimiento natural (función 'mover()').
-		let movX = coord.x + dir.x * distancia;
-
-		// Calcular la 'y' dividiendo esa coordenada final
-		// entre el tamaño de columna y sumando el resultado
-		// a la coordenada 'y' actual.
-		nuevaY = coord.y + Math.floor(movX / tablero.dataset.cols);
-
-		// ¿Movimiento hacia la izquierda? Invertir el
-		// sentido de la coordenada 'x' en la coordenada
-		// de destino (7 -> 0, 6 -> 1, 5 -> 2, etc.).
-		if(movX < 0) movX = numero(tablero.dataset.cols) + (movX % tablero.dataset.cols);
-
-		// Calcular 'x' cogiendo el resto entre la
-		// coordenada de destino y el tamaño de columna.
-		nuevaX = movX % tablero.dataset.cols;
-	} else {
-		// ¿Movimiento vertical? Mismos cálculos, pero
-		// con los ejes transpuestos.
-		let movY = coord.y + dir.y * distancia;
-		nuevaX = coord.x + Math.floor(movY / tablero.dataset.rows);
-
-		if(movY < 0) movY = numero(tablero.dataset.rows) + (movY % tablero.dataset.rows);
-		nuevaY = movY % tablero.dataset.rows;
-	}
-
-	// Construir, validar y devolver las coordenadas.
-	let out = {
-		x: nuevaX,
-		y: nuevaY
-	}
-
-	if(!validarCoordenadas(out)) return null;
-	else return out;
-}
-
 // Funciones: getters para elementos y atributos del DOM.
 
 /**
@@ -442,47 +381,43 @@ function buscarCoincidencias(horizontal) {
 	let out = new Set();
 
 	// Sacar longitud de los ejes I y J, y la dirección
-	// contraria a la del flujo del bucle.
+	// en la que se recorrerá el tablero.
 	const lenI = horizontal ? tablero.dataset.rows : tablero.dataset.cols;
 	const lenJ = horizontal ? tablero.dataset.cols : tablero.dataset.rows;
-	const dir = horizontal ? DIR_LEFT : DIR_TOP;
+	const dir = horizontal ? DIR_RIGHT : DIR_BOTTOM;
 
 	// Recorrer array en el orden deseado.
 	let racha = 1;
 	for(let i = 0; i < lenI; i++) {
 		for(let j = 0; j < lenJ; j++) {
-			// Sacar coordenadas actuales y dirección de la
-			// pieza anterior según el eje del recorrido.
+			// Sacar coordenadas actuales y los
+			// diamantes de esta posición y de la siguiente.
 			const coord = horizontal ? coordenadas(j, i) : coordenadas(i, j);
+			const actual = diamante(coord);
+			const siguiente = diamante(mover(coord, dir, 1));
 			
 			// ¿Bloque vacío? Ignorar y resetear racha.
-			if(diamante(coord).dataset.color == "vacio") {
+			if(actual.dataset.color == "vacio") {
 				racha = 1;
 				continue;
 			}
 
-			// ¿Mismo color que el anterior en fila? Incrementar racha.
-			// ¿Distinto color o primero de fila? Romper racha.
-			if(j != 0 && diamante(coord).dataset.color == diamante(mover(coord, dir, 1)).dataset.color) {
+			// ¿Mismo color que el siguiente en fila? Incrementar racha.
+			// ¿Distinto color o último de fila? Romper racha.
+			if(siguiente != null && actual.dataset.color == siguiente.dataset.color) {
 				racha++;
 			} else {
-				// ¿Racha de 3 o más? Eliminar diamantes
-				// y añadirlos a la lista a devolver.
+				// ¿Racha de 3 o más? Recorrer diamantes
+				// partiendo desde el origen de la racha
+				// y añadirlos a la lista de coincidencias.
 				if(racha >= 3)
 					for(let pos = racha - 1; pos >= 0; pos--)
-						out.add(diamante(moverEnTablero(coord, dir, pos + 1)));
+						out.add(diamante(mover(coord, dir, -pos)));
 
+				// Resetear racha.
 				racha = 1;
 			}
 		}
-	}
-
-	// ¿Racha de 3 o más al acabar? Eliminar los
-	// diamantes que queden.
-	if(racha >= 3) {
-		const coord = coordenadas(tablero.dataset.cols - 1, tablero.dataset.rows - 1);
-		for(let pos = racha - 1; pos >= 0; pos--)
-			out.add(diamante(moverEnTablero(coord, dir, pos + 1)));
 	}
 
 	// Devolver lista de diamantes eliminados.
