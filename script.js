@@ -96,12 +96,16 @@ let encendido = true;
  *	Este método no está incluido en los apuntes,
  *	pero se prohibió explícitamente el uso de
  *	'parseInt()' en la clase del 12/03/2026.
- * 
+ *
+ *	AVISO: si la String proporcionada no es un
+ *	número, el método devolverá simplemente esa
+ *	misma String con un símbolo de adición ('+')
+ *	delante del texto que contenía.
+ *
  *	Referencia externa: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unary_plus
  */
 function numero(str) {
-	let out = +str;
-	return isNaN(out) ? str : out;
+	return +str;
 }
 
 // Funciones: sistema de coordenadas.
@@ -660,7 +664,7 @@ function generarDiamante(coord) {
  */
 function generarTablero(cols, rows) {
 	if(cols <= 2 || rows <= 2) {
-		console.log("Error: el tablero debe medir 3x3 bloques como mínimo.");
+		alert("Error: el tablero debe medir 3x3 bloques como mínimo.");
 		return;
 	}
 
