@@ -23,6 +23,11 @@ const MAX_PUNTUACION = 1000;
 /**
  *	Posibles colores de un diamante, definidos
  *	como nombres de clases CSS.
+ *
+ *	Este array está incluido forma parte del
+ *	enunciado del propio ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 const colores = [
 	'color-rojo',
@@ -39,6 +44,8 @@ const colores = [
  *	Está definido en el documento HTML y se
  *	asume que nunca puede estar indefinido
  *	o tener un valor nulo.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/ut4/#manipular-elementos-html
  */
 const tablero = document.getElementById("tablero");
 
@@ -48,6 +55,8 @@ const tablero = document.getElementById("tablero");
  *	Está definido en el documento HTML y se
  *	asume que nunca puede estar indefinido
  *	o tener un valor nulo.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/ut4/#manipular-elementos-html
  */
 const indicadorPuntuacion = document.getElementById("puntuacion");
 
@@ -55,6 +64,13 @@ const indicadorPuntuacion = document.getElementById("puntuacion");
 
 /**
  *	Puntuación del jugador.
+ * 
+ *	Definir esto fuera del DOM va en contra de la
+ *	"regla de oro" establecida en el enunciado, pero
+ *	el enunciado de la tarea 5 así lo requiere.
+ * 
+ *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#introduccion
+ *	Referencia 2: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-5-sistema-de-puntuacion
  */
 let puntuacion = 0;
 
@@ -63,11 +79,26 @@ let puntuacion = 0;
  * 
  *	Cuando el juego se "apaga", el tablero
  *	deja de recibir clicks del usuario.
+ * 
+ *	Asumo que si la tarea 5 permite crear una variable
+ *	global, definir esto fuera del DOM tampoco va
+ *	contra la "regla del oro" del enunciado.
  */
 let encendido = true;
 
 // Funciones: arreglos para el desastre de tipos de JavaScript.
 
+/**
+ *	Convierte una String a un valor numérico
+ *	usando únicamente el operador '+', que
+ *	forma parte de JavaScript nativo.
+ * 
+ *	Este método no está incluido en los apuntes,
+ *	pero se prohibió explícitamente el uso de
+ *	'parseInt()' en la clase del 12/03/2026.
+ * 
+ *	Referencia externa: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unary_plus
+ */
 function numero(str) {
 	let out = +str;
 	return isNaN(out) ? str : out;
@@ -115,6 +146,8 @@ function validarDireccion(dir) {
 
 /**
  *	Construye un par de coordenadas validado.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/ut4/#objeto
  */
 function coordenadas(x, y) {
 	let out = {
@@ -127,6 +160,8 @@ function coordenadas(x, y) {
 
 /**
  *	Construye una dirección validada.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/ut4/#objeto
  */
 function direccion(x, y) {
 	let out = {
@@ -145,6 +180,10 @@ function direccion(x, y) {
  *	En otros términos: multiplica las coordenadas
  *	de la dirección por la distancia y suma el
  *	resultado a las coordenadas proporcionadas.
+ * 
+ *	Si las coordenadas resultantes no son válidas
+ *	(es decir, se "sale del tablero"), la función
+ *	devolverá un valor nulo.
  */
 function mover(coord, dir, distancia) {
 	if(!validarCoordenadas(coord)) return null;
@@ -166,6 +205,12 @@ function mover(coord, dir, distancia) {
  *	Solamente devuelve un valor nulo si se
  *	pretende retroceder más allá de (0, 0) o
  *	avanzar más allá de (7, 7).
+ * 
+ *	Se usa la función 'Math.floor()' para truncar
+ *	números, tal y como se usa en el enunciado
+ *	del ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 function moverEnTablero(coord, dir, distancia) {
 	if(!validarCoordenadas(coord)) return null;
@@ -218,6 +263,11 @@ function moverEnTablero(coord, dir, distancia) {
 /**
  *	Devuelve un color aleatorio de entre los que
  *	se incluyen en la lista 'colores'.
+ * 
+ *	El cuerpo de esta función forma parte del
+ *	propio enunciado del ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 function colorAleatorio() {
 	return colores[Math.floor(Math.random() * colores.length)];
@@ -226,6 +276,12 @@ function colorAleatorio() {
 /**
  *	Devuelve el diamante ubicado en la posición
  *	proporcionada.
+ * 
+ *	El operador ternario ('?') se usa aquí y en
+ *	más partes del ejercicio. Es una abreviación
+ *	de un bloque if-else y lo hemos dado en Java.
+ * 
+ *	Referencia externa: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator
  */
 function diamante(coord) {
 	return validarCoordenadas(coord) ?
@@ -236,6 +292,11 @@ function diamante(coord) {
 /**
  *	Devuelve las coordenadas de un diamante.
  *	Es decir, su "posición" en el tablero.
+ * 
+ *	Si la columna o la fila del diamante no
+ *	han sido inicializadas, devuelve un valor
+ *	nulo. Además, convierte las propiedades
+ *	a su valor numérico usando 'numero()'.
  */
 function posicion(diamante) {
 	if(diamante.dataset.col == undefined ||
@@ -255,8 +316,18 @@ function posicion(diamante) {
  * 
  *	Esta función previene que el tablero se cree
  *	con trios formados al principio del juego.
+ * 
+ *	Es equivalente a la función
+ * 'obtenerColorValidoAleatorio(x, y)' requerida en
+ *	el enunciado del ejercicio. Simplemente se añade
+ *	una validación previa de las coordenadas.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 function obtenerColorValidoAleatorio(coord) {
+	// Validar coordenadas.
+	if(!validarCoordenadas(coord)) return null;
+
 	// Obtener color aleatorio.
 	color = colorAleatorio();
 
@@ -284,6 +355,10 @@ function obtenerColorValidoAleatorio(coord) {
  *	Intercambia el color y la opacidad de
  *	dos bloques, sin validar trios formados
  *	ni actualizar el tablero posteriormente.
+ * 
+ *	Se usa internamente como parte de la función
+ *	'intercambiarDiamantes()', requerida por el
+ *	enunciado del ejercicio.
  */
 function intercambiarColores(a, b) {
 	// Obtener colores y opacidades de ambos diamantes.
@@ -328,6 +403,11 @@ function intercambiarColores(a, b) {
  *	El método se invoca recursivamente hasta
  *	llegar a una posición que tenga por encima
  *	coordenadas inválidas (la fila 0).
+ * 
+ *	Esta función se pide en la tarea 4 del
+ *	enunciado del ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-4-gravedad-y-relleno-de-vacios
  */
 function aplicarGravedad(coord) {
 	// ¿No hay nada por encima? Volver.
@@ -339,11 +419,11 @@ function aplicarGravedad(coord) {
 	if(dmt.dataset.color != "vacio") return null;
 
 	// Intercambiar con el bloque que
-	// tiene justo arriba.
+	// tiene justo encima.
 	intercambiarColores(diamante(arriba), dmt);
 
 	// Aplicar gravedad sobre el bloque
-	// de arriba también.
+	// de por encima de ese también.
 	aplicarGravedad(mover(coord, DIR_TOP, 1));
 }
 
@@ -352,11 +432,17 @@ function aplicarGravedad(coord) {
  *	indicado y devuelve una lista con todos los
  *	bloques que formen parte de trios de
  *	diamantes adyacentes del mismo color.
+ * 
+ *	Esta función se pide en la tarea 3 del
+ *	enunciado del ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-3-comprobacion-de-combinaciones-match-3
  */
 function buscarCoincidencias(horizontal) {
 	let out = new Set();
 
-	// Sacar longitud de los ejes I y J.
+	// Sacar longitud de los ejes I y J, y la dirección
+	// contraria a la del flujo del bucle.
 	const lenI = horizontal ? tablero.dataset.rows : tablero.dataset.cols;
 	const lenJ = horizontal ? tablero.dataset.cols : tablero.dataset.rows;
 	const dir = horizontal ? DIR_LEFT : DIR_TOP;
@@ -393,9 +479,11 @@ function buscarCoincidencias(horizontal) {
 
 	// ¿Racha de 3 o más al acabar? Eliminar los
 	// diamantes que queden.
-	if(racha >= 3)
+	if(racha >= 3) {
+		const coord = coordenadas(tablero.dataset.cols - 1, tablero.dataset.rows - 1);
 		for(let pos = racha - 1; pos >= 0; pos--)
-			out.add(diamante(moverEnTablero(coordenadas(7, 7), dir, pos + 1)));
+			out.add(diamante(moverEnTablero(coord, dir, pos + 1)));
+	}
 
 	// Devolver lista de diamantes eliminados.
 	return out;
@@ -409,6 +497,13 @@ function buscarCoincidencias(horizontal) {
  *	Las acciones de borrar y aplicar gravedad son
  *	a lo que nos referimos cuando decimos que se
  *	"limpia" un diamante o un grupo de ellos.
+ * 
+ *	Esta función se pide en la tarea 3 del
+ *	enunciado del ejercicio. Además, se piden
+ *	funcionalidades extra en la tarea 5.
+ * 
+ *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-3-comprobacion-de-combinaciones-match-3
+ *	Referencia 2: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-5-sistema-de-puntuacion
  */
 function limpiarCoincidencias(diamantes) {
 	// Recorrer diamantes a limpiar.
@@ -430,6 +525,12 @@ function limpiarCoincidencias(diamantes) {
  *	Limpia los trios formados y se ejecuta
  *	recursivamente hasta que no encuentre
  *	ningún trio de diamantes en el tablero.
+ * 
+ *	Esta función se usa internamente desde
+ *	'intercambiarDiamantes(a, b)' y cumple
+ *	los requerimientos de la tarea 4.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-4-gravedad-y-relleno-de-vacios
  */
 function actualizarTablero(repetida) {
 	// Combinar trios horizontales y verticales.
@@ -440,8 +541,8 @@ function actualizarTablero(repetida) {
 	limpiarCoincidencias(trios);
 
 	// Recorrer el tablero para buscar huecos vacíos.
-	for(let y = 0; y < tablero.dataset.cols; y++) {
-		for(let x = 0; x < tablero.dataset.rows; x++) {
+	for(let y = 0; y < tablero.dataset.rows; y++) {
+		for(let x = 0; x < tablero.dataset.cols; x++) {
 			const coord = coordenadas(x, y);
 			const dmt = diamante(coord);
 
@@ -470,14 +571,21 @@ function actualizarTablero(repetida) {
  * 
  *	Si el intercambio no produce ningún trio
  *	de diamantes nuevo, se cancela.
+ * 
+ *	Esta función se pide en las tareas 2 y 4
+ *	del ejercicio.
+ * 
+ *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-2-logica-de-seleccion-e-intercambio
+ *	Referencia 2: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-4-gravedad-y-relleno-de-vacios
  */
 function intercambiarDiamantes(a, b) {
 	// Intercambiar colores de los diamantes.
 	intercambiarColores(a, b);
 
-	// Si el intercambio no forma ningún trio,
-	// recuperar posición anterior.
+	// Dentro de 300ms, en un proceso aparte...
 	setTimeout(() => {
+		// Si el intercambio no forma ningún trio,
+		// recuperar posición anterior.
 		if(actualizarTablero(false) == false) {
 			intercambiarColores(a, b);
 			return;
@@ -515,7 +623,12 @@ function intercambiarDiamantes(a, b) {
  * 
  *	-	Si ya hay un diamante seleccionado y el
  *		diamante clickado es adyacente a este,
- *		intercambia sus propiedades.
+ *		los intercambia y actualiza el tablero.
+ * 
+ *	Esta función se pide en la tarea 2
+ *	del ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-2-logica-de-seleccion-e-intercambio
  */
 function manejarClickDiamante(event) {
 	if(!encendido) return;
@@ -566,6 +679,15 @@ function manejarClickDiamante(event) {
  *	Devuelve un <div> con la ID 'diamante'
  *	y todas las propiedades que posibilitan su
  *	funcionamiento como parte del tablero.
+ * 
+ *	Se usa internamente en 'generarTablero(coord)'
+ *	y cumple todos los requerimientos de la tarea 1.
+ * 
+ *	La devolución de objetos se ha mencionado en
+ *	alguna clase de Lenguajes de Marca y, obviamente,
+ *	la hemos dado en Programación.
+ *	
+ *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 function generarDiamante(coord) {
 	// Crear el elemento <div>.
@@ -595,8 +717,18 @@ function generarDiamante(coord) {
  *	Limpia el tablero y lo llena de diamantes,
  *	respetando los números de columnas y filas
  *	proporcionados en los argumentos.
+ * 
+ *	Esta función se pide en la tarea 1 del
+ *	ejercicio.
+ * 
+ *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-1-generar-el-tablero-en-el-dom
  */
 function generarTablero(cols, rows) {
+	if(cols <= 2 || rows <= 2) {
+		console.log("Error: el tablero debe medir 3x3 bloques como mínimo.");
+		return;
+	}
+
 	// Vaciar tablero.
 	tablero.innerHTML = "";
 
