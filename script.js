@@ -466,11 +466,10 @@ function buscarCoincidencias(horizontal) {
  *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-3-comprobacion-de-combinaciones-match-3
  *	Referencia 2: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-5-sistema-de-puntuacion
  */
-function limpiarCoincidencias(diamantes) {
+async function limpiarCoincidencias(diamantes) {
 	// Recorrer diamantes a limpiar.
 	for(const dmt of diamantes) {
-		// Borrar el diamante.
-		dmt.style.opacity = 0;
+		//dmt.style.opacity = 0;
 		dmt.classList.remove(dmt.dataset.color);
 		dmt.dataset.color = "vacio";
 
@@ -520,8 +519,26 @@ function actualizarTablero(repetida) {
 		}
 	}
 
+	// Actualizar indicador de puntuación y
+	// terminar el juego cuando ha llegado a
+	// la puntuación máxima.
+	if(puntuacion >= MAX_PUNTUACION) {
+		indicadorPuntuacion.innerText = MAX_PUNTUACION + " 🎉";
+		alert("¡Enhorabuena! Has llegado a la puntuación máxima.");
+		encendido = false;
+	} else {
+		indicadorPuntuacion.innerText = puntuacion;
+	}
+
 	// Devolver lista combinada.
-	return trios.size == 0 ? repetida : actualizarTablero(true);
+	// No hemos dado las Promises, pero es la única
+	// manera de llamar a setTimeout() de forma síncrona,
+	// para hacer las pausas que el enunciado requiere.
+	return trios.size == 0 ? repetida : new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve(actualizarTablero(true));
+		}, 600);
+	});
 }
 
 /**
@@ -545,23 +562,13 @@ function intercambiarDiamantes(a, b) {
 
 	// Dentro de 300ms, en un proceso aparte...
 	setTimeout(() => {
+		const resultado = actualizarTablero(false);
+
 		// Si el intercambio no forma ningún trio,
 		// recuperar posición anterior.
-		if(actualizarTablero(false) == false) {
+		if(resultado == false) {
 			intercambiarColores(a, b);
 			return;
-		}
-	
-		// Actualizar indicador de puntuación y
-		// terminar el juego cuando ha llegado a
-		// la puntuación máxima.
-		if(puntuacion >= MAX_PUNTUACION) {
-			indicadorPuntuacion.innerText = MAX_PUNTUACION + " 🎉";
-			alert("¡Enhorabuena! Has llegado a la puntuación máxima.");
-
-			encendido = false;
-		} else {
-			indicadorPuntuacion.innerText = puntuacion;
 		}
 	}, 300);
 }
