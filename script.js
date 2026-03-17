@@ -8,6 +8,28 @@
  *	César Gutiérrez
  */
 
+/**
+ *	NOTAS:
+ * 
+ *	1.	Todas las funciones del enunciado que reciben
+ *		por parámetro unas coordenadas (x, y) se han
+ *		implementado en este ejercicio de otra forma:
+ *		reciben un objeto "coordenadas".
+ * 
+ *		Esto se ha hecho para poder usar la función
+ *		`mover()` y el sistema de direcciones, que
+ *		permite crear código mucho más legible y
+ *		mantenible y agrupar datos relacionados.
+ * 
+ *	2.	Se usan varias cosas que, como tal, no se han
+ *		mencionado en clase, pero añaden cambios mínimos
+ *		o son necesarias para el ejercicio.
+ * 
+ *		Dos ejemplos son el uso del operador ternario y
+ *		el uso del operador '+' para convertir textos a
+ *		números.
+ */
+
 // Constantes
 
 const DEF_COLS = 8;
