@@ -28,6 +28,15 @@
  *		Dos ejemplos son el uso del operador ternario y
  *		el uso del operador '+' para convertir textos a
  *		números.
+ * 
+ *		También está el uso del objeto Promise. Se usa
+ *		únicamente para llamar a setTimeout() de forma
+ *		síncrona y poder devolver un valor.
+ * 
+ *		Lo incorporé al ejercicio en el mismo día de la
+ *		entrega, porque en la clase del 17/03/2026 se dijo
+ *		que se premiaría al alumno que investigara por su
+ *		cuenta. Hasta entonces dudaba de si meterlo o no.
  */
 
 // Constantes
@@ -41,6 +50,8 @@ const DIR_BOTTOM = direccion(0, 1);
 const DIR_LEFT = direccion(-1, 0);
 
 const MAX_PUNTUACION = 1000;
+
+const PUNTUACION_EXTENDER = 500;
 
 /**
  *	Posibles colores de un diamante, definidos
@@ -71,17 +82,6 @@ const colores = [
  */
 const tablero = document.getElementById("tablero");
 
-/**
- *	Indicador de puntuación.
- * 
- *	Está definido en el documento HTML y se
- *	asume que nunca puede estar indefinido
- *	o tener un valor nulo.
- * 
- *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/ut4/#manipular-elementos-html
- */
-const indicadorPuntuacion = document.getElementById("puntuacion");
-
 // Variables globales
 
 /**
@@ -97,16 +97,36 @@ const indicadorPuntuacion = document.getElementById("puntuacion");
 let puntuacion = 0;
 
 /**
+ *	Tiempo restante.
+ *
+ *	De nuevo, definirlo fuera del DOM puede ir
+ *	contra esa "regla de oro", pero forma parte
+ *	de los extras, así que asumo que existe algo
+ *	más de libertad en la implementación.
+ */
+let tiempo = 30;
+
+/**
  *	Si el juego está en curso o no.
  * 
  *	Cuando el juego se "apaga", el tablero
- *	deja de recibir clicks del usuario.
- * 
- *	Asumo que si la tarea 5 permite crear una variable
- *	global, definir esto fuera del DOM tampoco va
- *	contra la "regla del oro" del enunciado.
+ *	deja de recibir clicks del usuario, incluso
+ *	si el tablero no está bloqueado.
  */
 let encendido = true;
+
+/**
+ *	Si el tablero está bloqueado o no.
+ * 
+ *	Esta variable se usa para bloquear temporalmente
+ *	el tablero mientras se buscan nuevas combinaciones
+ *	de bloques adyacentes del mismo color.
+ * 
+ *	No se debe confundir con 'encendido', que bloquea
+ *	el tablero permanentemente, incluso si esta
+ *	variable tiene el valor 'false'.
+ */
+let bloqueado = false;
 
 // Funciones: arreglos para el desastre de tipos de JavaScript.
 
@@ -466,10 +486,10 @@ function buscarCoincidencias(horizontal) {
  *	Referencia 1: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-3-comprobacion-de-combinaciones-match-3
  *	Referencia 2: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-5-sistema-de-puntuacion
  */
-async function limpiarCoincidencias(diamantes) {
+function limpiarCoincidencias(diamantes) {
 	// Recorrer diamantes a limpiar.
 	for(const dmt of diamantes) {
-		//dmt.style.opacity = 0;
+		dmt.style.opacity = 0;
 		dmt.classList.remove(dmt.dataset.color);
 		dmt.dataset.color = "vacio";
 
@@ -492,7 +512,7 @@ async function limpiarCoincidencias(diamantes) {
  * 
  *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-4-gravedad-y-relleno-de-vacios
  */
-function actualizarTablero(repetida) {
+function actualizarTablero() {
 	// Combinar trios horizontales y verticales.
 	let trios = buscarCoincidencias(true).union(buscarCoincidencias(false));
 
@@ -519,26 +539,28 @@ function actualizarTablero(repetida) {
 		}
 	}
 
-	// Actualizar indicador de puntuación y
-	// terminar el juego cuando ha llegado a
-	// la puntuación máxima.
-	if(puntuacion >= MAX_PUNTUACION) {
-		indicadorPuntuacion.innerText = MAX_PUNTUACION + " 🎉";
-		alert("¡Enhorabuena! Has llegado a la puntuación máxima.");
-		encendido = false;
-	} else {
-		indicadorPuntuacion.innerText = puntuacion;
-	}
+	// Desactivar tablero hasta que termine
+	// de actualizarse completamente.
+	bloqueado = true;
 
-	// Devolver lista combinada.
-	// No hemos dado las Promises, pero es la única
-	// manera de llamar a setTimeout() de forma síncrona,
-	// para hacer las pausas que el enunciado requiere.
-	return trios.size == 0 ? repetida : new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve(actualizarTablero(true));
-		}, 600);
-	});
+	// Devolver si ha habido cambios o no.
+	if(trios.size == 0) {
+		bloqueado = false;
+		return false;
+	} else {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => {
+				// Actualizar tablero y encenderlo
+				// únicamente si ya no hay más conjuntos
+				// de bloques adyacentes del mismo color.
+				bloqueado = actualizarTablero();
+
+				// Devolver 'true' porque el método ha
+				// tenido que ser llamado más de una vez.
+				resolve(true);
+			}, 700);
+		});
+	}
 }
 
 /**
@@ -562,14 +584,9 @@ function intercambiarDiamantes(a, b) {
 
 	// Dentro de 300ms, en un proceso aparte...
 	setTimeout(() => {
-		const resultado = actualizarTablero(false);
-
 		// Si el intercambio no forma ningún trio,
 		// recuperar posición anterior.
-		if(resultado == false) {
-			intercambiarColores(a, b);
-			return;
-		}
+		if(actualizarTablero() == false) intercambiarColores(a, b);
 	}, 300);
 }
 
@@ -599,7 +616,7 @@ function intercambiarDiamantes(a, b) {
  *	Referencia: https://fjramirez.es/lmsgi/UT4.%20Manipulaci%C3%B3n%20de%20documentos%20web/Pr%C3%A1cticas/01/#tarea-2-logica-de-seleccion-e-intercambio
  */
 function manejarClickDiamante(event) {
-	if(!encendido) return;
+	if(bloqueado || !encendido) return;
 
 	let seleccionados = document.getElementsByClassName("seleccionado");
 
@@ -674,6 +691,11 @@ function generarDiamante(coord) {
 	out.dataset.color = color;
 	out.classList.add(color);
 
+	// Asignar propiedad 'transition' para que
+	// todos los cambios de color se vean un
+	// poquito más presentables.
+	out.style.transition = "0.25s";
+
 	// Añadir listeners para eventos.
 	out.addEventListener("click", manejarClickDiamante);
 
@@ -714,6 +736,94 @@ function generarTablero(cols, rows) {
 			tablero.appendChild(generarDiamante(coordenadas(x, y)));
 }
 
+/**
+ *	Esta función crea un elemento 
+ */
+function generarMarcador() {
+	// Evitar llamadas repetidas a esta función.
+	if(document.getElementById("tiempo") != null) {
+		alert("No se puede crear otro marcador más.");
+		return;
+	}
+
+	// Conseguir el elemento 'marcador'.
+	const marcador = document.getElementById("marcador");
+
+	// Crear el indicador de tiempo.
+	const indicadorTiempo = document.createElement("span");
+	indicadorTiempo.id = "tiempo";
+	indicadorTiempo.innerText = tiempo;
+	
+	marcador.innerHTML += " | Tiempo: ";
+	marcador.appendChild(indicadorTiempo);
+
+	// Crear el botón para extender el juego.
+	//
+	// Lo creo como 'a' para que esté centrado y
+	// no tenga los estilos predeterminados de un
+	// botón.
+	const botonExtender = document.createElement("a");
+	botonExtender.id = "extender";
+	botonExtender.innerText = "Extender";
+	botonExtender.style.display = "none";
+
+	botonExtender.style.marginLeft = "0.5em";
+	botonExtender.style.padding = "0.2em";
+	botonExtender.style.cursor = "pointer";
+
+	botonExtender.style.borderRadius = "5px";
+
+	botonExtender.style.color = "darkgreen";
+	botonExtender.style.backgroundColor = "lime";
+
+	botonExtender.addEventListener("click", () => {
+		puntuacion -= PUNTUACION_EXTENDER;
+				tiempo += 30;
+
+		// Evita que se den varias pulsaciones seguidas.
+		botonExtender.style.display = "none";
+	});
+
+	marcador.appendChild(botonExtender);
+
+	// Actualizar texto de los indicadores cada segundo.
+	const indicadorPuntuacion = document.getElementById("puntuacion");
+	const temporizador = setInterval(() => {
+		// Si el tiempo es cero, apagar el tablero.
+		if(tiempo == 0) {
+			marcador.innerText = "¡Juego terminado con " + puntuacion + " puntos!";
+			encendido = false;
+
+			// Esperar a que acaben las comprobaciones
+			// de nuevas combinaciones en cadena.
+			if(!bloqueado) clearInterval(temporizador);
+			return;
+		}
+
+		// Hacer visible el botón de extender únicamente
+		// si la puntuación es de más de 500 puntos.
+		if(puntuacion >= PUNTUACION_EXTENDER)
+			botonExtender.style.display = "unset";
+		else
+			botonExtender.style.display = "none";
+
+		tiempo -= 1;
+		indicadorPuntuacion.innerText = puntuacion;
+		indicadorTiempo.innerText = tiempo;
+	}, 1000);
+}
+
+/**
+ *	Función principal del programa.
+ */
+function main() {
+	// Crear temporizador, botón de extender, etc.
+	generarMarcador();
+
+	// Generar el tablero.
+	generarTablero(DEF_COLS, DEF_ROWS);
+}
+
 // Script
 
-generarTablero(DEF_COLS, DEF_ROWS);
+main();
