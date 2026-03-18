@@ -12,8 +12,9 @@ La página muestra un tablero de 8x8 con una serie de piezas dentro. Llamaremos 
 
 - Al hacer click en un diamante, se selecciona. Puedes cancelar la selección volviendo a hacer click en él.
 - Si ya tienes seleccionado un diamante, puedes hacer click en un diamante adyacente. De esta forma, intercambias sus posiciones.
-- Si al intercambiarlos formas un trio de diamantes del mismo color, ese trio se eliminará del tablero.
-- ¡Intenta vaciar el tablero!
+- Si al intercambiarlos juntos tres o más diamantes del mismo color, se eliminan. Además, sumarás 10 puntos por cada bloque eliminado.
+
+Tienes 30 segundos para conseguir todos los puntos que puedas. Si llegas a 500, podrás cambiar esos puntos por 30 segundos más. El juego acabará cuando el temporizador llegue a cero.
 
 ## ¿Cómo lo ejecuto?
 
@@ -25,4 +26,4 @@ Puedes probar el juego tú mismo siguiendo estos pasos:
 
 ## Demo online
 
-[Haz click aquí](https://jsfiddle.net/xdrhm4a6/) para ver una demo del juego en *JSFiddle*. La demo fue actualizada por última vez el 05/03/2026, puede estar desactualizada.
+[Haz click aquí](https://merida.party/dam/marca/practicas/diamantes/) para ver una demo del juego. El código de la demo pertenece al commit `dd8bda6`.
